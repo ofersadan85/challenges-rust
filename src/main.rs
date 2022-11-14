@@ -1,5 +1,5 @@
-fn is_prime(n: i32) -> bool {
-    let max_div: i32 = (n as f32).powf(0.5) as i32 + 1;
+fn is_prime(n: u128) -> bool {
+    let max_div: u128 = (n as f64).sqrt() as u128 + 1;
     for div in 2..max_div {
         if n % div == 0 {
             return false;
@@ -8,13 +8,13 @@ fn is_prime(n: i32) -> bool {
     true
 }
 
-fn prime_factors(n: i32) -> Vec<i32> {
-    let mut n: i32 = n;
-    let mut div: i32 = 2;
-    let mut result = Vec::new();
-    let max_div: f32 = (n as f32).powf(0.5);
+fn prime_factors(n: u128) -> Vec<u128> {
+    let mut n: u128 = n;
+    let mut div: u128 = 2;
+    let mut result: Vec<u128> = Vec::new();
+    let max_div: f64 = (n as f64).sqrt();
     while n > 1 {
-        if div > max_div as i32 {
+        if div > max_div as u128 {
             result.push(n);
             break;
         } else if n % div == 0 {
@@ -22,7 +22,7 @@ fn prime_factors(n: i32) -> Vec<i32> {
             n = n / div;
             div = 2;
         } else {
-            div = div + 1;
+            div += 1;
         }
     }
     result
@@ -33,12 +33,24 @@ fn main() {
         let test = prime_factors(n);
         println!("testing {}: {:?}", n, test)
     }
-    println!("testing {}: {:?}", i32::MAX - 1, prime_factors(i32::MAX - 1));
-    println!("testing {}: {:?}", i32::MAX, prime_factors(i32::MAX));
+    println!(
+        "testing {}: {:?}",
+        u64::MAX - 1,
+        prime_factors(u64::MAX as u128 - 1)
+    );
+    println!(
+        "testing {}: {:?}",
+        u64::MAX,
+        prime_factors(u64::MAX as u128)
+    );
     for n in 1..103 {
         let test = is_prime(n);
         println!("testing {}: {:?}", n, test)
     }
-    println!("testing {}: {:?}", i32::MAX - 1, is_prime(i32::MAX - 1));
-    println!("testing {}: {:?}", i32::MAX, is_prime(i32::MAX));
+    println!(
+        "testing {}: {:?}",
+        u64::MAX - 1,
+        is_prime(u64::MAX as u128 - 1)
+    );
+    println!("testing {}: {:?}", u64::MAX, is_prime(u64::MAX as u128));
 }
