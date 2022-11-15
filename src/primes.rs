@@ -1,7 +1,3 @@
-// Use this if needed:
-// mod primes;
-// use primes::{prime_factors, is_prime};
-
 pub fn is_prime(n: u128) -> bool {
     let max_div: u128 = (n as f64).sqrt() as u128 + 1;
     for div in 2..max_div {
