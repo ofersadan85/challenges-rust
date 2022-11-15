@@ -15,3 +15,17 @@ pub fn pascals_triangle(n: usize) -> Vec<usize> {
     }
     result
 }
+
+pub fn pascals_triangle_2(n: usize) -> Vec<usize> {
+    let mut rows: Vec<Vec<usize>> = vec![vec![1]];
+    while rows.len() < n {
+        let previous = rows.last().unwrap();
+        let mut next = vec![1];
+        for i in 1..previous.len() {
+            next.push(previous[i - 1] + previous[i]);
+        }
+        next.push(1);
+        rows.push(next);
+    }
+    rows.into_iter().flatten().collect::<Vec<usize>>()
+}
