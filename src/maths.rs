@@ -80,12 +80,14 @@ pub fn pascals_triangle_2(n: usize) -> Vec<usize> {
 }
 
 pub fn is_perfect_power(n: u64) -> Option<(u64, u32)> {
-    let exp = gcd(prime_factors(n as u128)
+    let factors = prime_factors(n as u128)
         .iter()
         .counts()
         .values()
         .cloned()
-        .collect());
+        .map(|v| v as u128)
+        .collect();
+    let exp = gcd(factors);
     if exp > 1 {
         Some(((n as f64).powf(1.0 / exp as f64).round() as u64, exp as u32))
     } else {
