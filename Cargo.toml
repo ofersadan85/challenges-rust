@@ -10,8 +10,8 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-itertools = "0.10.5"
-rand = "0.8.5"
-strum = "0.24.1"
-strum_macros = "0.24.3"
-thiserror = "1.0.37"
+itertools = "^0"
+rand = "^0"
+strum = "^0"
+strum_macros = "^0"
+thiserror = "^1"
