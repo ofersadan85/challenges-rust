@@ -1,10 +1,11 @@
 use itertools::{iproduct, Itertools};
-use std::fmt::Display;
+use rand::prelude::*;
+use std::{collections::HashMap, fmt::Display};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use rand::prelude::*;
+use thiserror::Error;
 
-#[derive(Debug, Eq, PartialEq, Clone, Copy, EnumIter)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy, EnumIter)]
 pub enum CardSuit {
     Heart,
     Diamond,
@@ -12,7 +13,7 @@ pub enum CardSuit {
     Spade,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Copy, EnumIter)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy, EnumIter)]
 pub enum CardValue {
     Two = 2,
     Three = 3,
@@ -66,7 +67,7 @@ impl Display for Card {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Deck {
-    cards: Vec<Card>,
+    pub cards: Vec<Card>,
 }
 
 impl Deck {
@@ -87,4 +88,76 @@ impl Display for Deck {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.cards.iter().join(" "))
     }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
+pub enum HandKind {
+    HighCard = 0,
+    Pair = 1,
+    TwoPairs = 2,
+    ThreeOfAKind = 3,
+    Straight = 4,
+    Flush = 5,
+    FullHouse = 6,
+    FourOfAKind = 7,
+    StraightFlush = 8,
+    RoyalFlash = 9,
+}
+
+#[derive(Error, Debug)]
+pub enum CardError {
+    #[error("Only able to parse hands of 5 cards, got {0} instead")]
+    CardNumbers(usize),
+}
+
+pub fn eval_hand(cards: Vec<Card>) -> Result<HandKind, CardError> {
+    if cards.len() != 5 {
+        return Err(CardError::CardNumbers(cards.len()));
+    }
+    let mut suit_count: HashMap<CardSuit, u8> = HashMap::new();
+    let mut value_count1: HashMap<CardValue, u8> = HashMap::new();
+    for card in cards.clone() {
+        suit_count
+            .entry(card.suit)
+            .and_modify(|c| *c += 1)
+            .or_insert(1);
+        value_count1
+            .entry(card.value)
+            .and_modify(|c| *c += 1)
+            .or_insert(1);
+    }
+    let value_count2 = value_count1.values().counts();
+    let is_flush = suit_count.values().max().unwrap_or(&0) == &5;
+    let (min, max) = cards
+        .iter()
+        .minmax_by_key(|c| c.value as u8)
+        .into_option()
+        .ok_or(CardError::CardNumbers(0))?;
+
+    let is_straight =
+        value_count2.get(&1).unwrap_or(&0) == &5 && max.value as u8 - min.value as u8 == 4;
+
+    if is_straight && is_flush && max.value as u8 == 14 {
+        return Ok(HandKind::RoyalFlash);
+    } else if is_straight && is_flush {
+        return Ok(HandKind::StraightFlush);
+    } else if is_flush {
+        return Ok(HandKind::Flush);
+    } else if is_straight {
+        return Ok(HandKind::Straight);
+    }
+
+    let result = (
+        value_count2.get(&2).unwrap_or(&0).to_owned(),
+        value_count2.get(&3).unwrap_or(&0).to_owned(),
+        value_count2.get(&4).unwrap_or(&0).to_owned(),
+    );
+    Ok(match result {
+        (0, 0, 1) => HandKind::FourOfAKind,
+        (0, 1, 0) => HandKind::ThreeOfAKind,
+        (1, 1, 0) => HandKind::FullHouse,
+        (2, 0, 0) => HandKind::TwoPairs,
+        (1, 0, 0) => HandKind::Pair,
+        _ => HandKind::HighCard,
+    })
 }
