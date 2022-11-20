@@ -43,6 +43,35 @@ impl Card {
             suit: suit,
         }
     }
+    pub fn from_string(s: &str) -> Result<Self, CardError> {
+        let parse_error = CardError::CardParseError(s.to_string());
+        let mut chars = s.chars();
+        let value = match chars.next() {
+            Some('2') => CardValue::Two,
+            Some('3') => CardValue::Three,
+            Some('4') => CardValue::Four,
+            Some('5') => CardValue::Five,
+            Some('6') => CardValue::Six,
+            Some('7') => CardValue::Seven,
+            Some('8') => CardValue::Eight,
+            Some('9') => CardValue::Nine,
+            Some('T') => CardValue::Ten,
+            Some('J') => CardValue::Jack,
+            Some('Q') => CardValue::Queen,
+            Some('K') => CardValue::King,
+            Some('A') => CardValue::Ace,
+            _ => return Err(parse_error)
+        };
+        let suit = match chars.next() {
+            Some('♥') => CardSuit::Heart,
+            Some('♦') => CardSuit::Diamond,
+            Some('♣') => CardSuit::Club,
+            Some('♠') => CardSuit::Spade,
+            _ => return Err(parse_error)
+        };
+        if chars.next().is_some() { return Err(parse_error) }
+        Ok(Card { value: value, suit: suit })
+    }
 }
 
 impl Display for Card {
@@ -108,12 +137,18 @@ pub enum HandKind {
 pub enum CardError {
     #[error("Only able to parse hands of 5 cards, got {0} instead")]
     CardNumbers(usize),
+    #[error("Could not parse '{0}' as a card")]
+    CardParseError(String),
+    // #[error("Duplicate cards found in hand: '{0}'")]
+    // DuplicateCards(Card)
 }
 
 pub fn eval_hand(cards: Vec<Card>) -> Result<HandKind, CardError> {
     if cards.len() != 5 {
         return Err(CardError::CardNumbers(cards.len()));
     }
+    // cards.sort();  #TODO: Make cards sortable
+    // cards.dedup();
     let mut suit_count: HashMap<CardSuit, u8> = HashMap::new();
     let mut value_count1: HashMap<CardValue, u8> = HashMap::new();
     for card in cards.clone() {
