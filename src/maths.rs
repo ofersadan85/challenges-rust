@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use itertools::Itertools;
 
 pub fn is_prime(n: u128) -> bool {
     let max_div: u128 = (n as f64).sqrt() as u128 + 1;
@@ -79,16 +79,13 @@ pub fn pascals_triangle_2(n: usize) -> Vec<usize> {
     rows.into_iter().flatten().collect::<Vec<usize>>()
 }
 
-
 pub fn is_perfect_power(n: u64) -> Option<(u64, u32)> {
-    let mut factor_map: HashMap<u128, u128> = HashMap::new();
-    for f in prime_factors(n as u128) {
-        factor_map
-            .entry(f)
-            .and_modify(|counter| *counter += 1)
-            .or_insert(1);
-    }
-    let exp = gcd(factor_map.values().cloned().collect());
+    let exp = gcd(prime_factors(n as u128)
+        .iter()
+        .counts()
+        .values()
+        .cloned()
+        .collect());
     if exp > 1 {
         Some(((n as f64).powf(1.0 / exp as f64).round() as u64, exp as u32))
     } else {
